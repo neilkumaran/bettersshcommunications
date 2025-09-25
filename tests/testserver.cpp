@@ -22,7 +22,7 @@ int main() {
 
     sockaddr_in addr{};
     addr.sin_family = AF_INET;
-    addr.sin_addr.s_addr = inet_addr("127.0.0.1"); // localhost only
+    addr.sin_addr.s_addr = INADDR_ANY; // localhost only
     addr.sin_port = htons(12345);
 
     if (bind(server_fd, (sockaddr*)&addr, sizeof(addr)) < 0) { perror("bind"); return 1; }
@@ -39,3 +39,4 @@ int main() {
 
     close(server_fd);
 }
+
