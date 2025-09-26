@@ -8,8 +8,26 @@
 #include <sys/socket.h>
 #include <unistd.h>
 #include <string>
+#include <fstream>
+#include <sys/stat.h>
+#include <cstdlib>
 
 using namespace std;
+
+string getCfgPath() {
+    const char* home = getenv("HOME");
+    if (!home) home = "."; // fallback to current directory
+
+    string dir = string(home) + "/.bettersshcommunications";
+
+    // create directory if it doesn't exist
+    struct stat st;
+    if (stat(dir.c_str(), &st) == -1) {
+        mkdir(dir.c_str(), 0755);
+    }
+
+    return dir + "/clients.cfg";
+}
 
 // vpn filtering for tuns
 bool vpnCheck(const char* ifname) {
@@ -85,18 +103,41 @@ void sendHeartbeat(string clientIP, string hostName, string serverIP) {
     
 }
 
+string readIPFromCfg(const string& cfgFile) {
+    ifstream infile(cfgFile);
+    string ip;
+    getline(infile, ip);
+    return ip;
+}
+
+void writeIPToCfg(const string& cfgFile, const string& ip) {
+    ofstream outfile(cfgFile);
+    outfile << ip << endl;
+}
 
 int main() {
+    string cfgFile = getCfgPath();
+
     string serverIP;
     string clientIP = getLocalAddrInfo();
-    cout << serverIP << endl;
     const char* username = getenv("USER");
 
-    cout << "Enter server ip: "; 
-    cin >> serverIP; 
+    // Try to read IP from cfg, else prompt
+    ifstream infile(cfgFile);
+    if (infile.good()) {
+        getline(infile, serverIP);
+        infile.close();
+    }
+    if (serverIP.empty()) {
+        cout << "Enter server IP: ";
+        getline(cin, serverIP);
+        writeIPToCfg(cfgFile, serverIP);
+    }
 
-    while (true) { 
+    cout << "\nChange the IP at " << cfgFile << "\n";
+
+    while (true) {
         sendHeartbeat(clientIP, username, serverIP);
         sleep(8.3);
     }
-}
+}  
