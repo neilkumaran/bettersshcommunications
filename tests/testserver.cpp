@@ -58,7 +58,7 @@ void watchdog() {
             auto now = std::chrono::steady_clock::now();
             for (auto& [host, info] : clients) {
                 if (info.online &&
-                    std::chrono::duration_cast<std::chrono::seconds>(now - info.last_seen).count() > 20) {
+                    std::chrono::duration_cast<std::chrono::seconds>(now - info.last_seen).count() > 15) {
                     info.online = false; // mark offline
                 }
             }

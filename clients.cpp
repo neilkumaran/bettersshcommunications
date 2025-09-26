@@ -86,7 +86,6 @@ void sendHeartbeat(string clientIP, string hostName, string serverIP) {
 }
 
 
-
 int main() {
     string serverIP;
     string clientIP = getLocalAddrInfo();
@@ -95,5 +94,9 @@ int main() {
 
     cout << "Enter server ip: "; 
     cin >> serverIP; 
-    sendHeartbeat(clientIP, username, serverIP);
+
+    while (true) { 
+        sendHeartbeat(clientIP, username, serverIP);
+        sleep(8.3);
+    }
 }
