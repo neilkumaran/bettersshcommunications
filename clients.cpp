@@ -79,11 +79,12 @@ string getLocalAddrInfo() {
     return result; // empty string if none found
 }
 
-void sendHeartbeat(string clientIP, string hostName, string serverIP) {
+int sendHeartbeat(string clientIP, string hostName, string serverIP) {
     int sock = socket(AF_INET, SOCK_STREAM, 0);
     
     if (sock < 0) {
         perror("socket init error");
+        return 1;
     }
 
     sockaddr_in server_addr{};
@@ -93,6 +94,7 @@ void sendHeartbeat(string clientIP, string hostName, string serverIP) {
 
     if (connect(sock, (sockaddr*)&server_addr, sizeof(server_addr)) < 0) {
         perror("connect");
+        return 1;
     }
 
     string message = hostName + ", " + clientIP; 
@@ -100,7 +102,7 @@ void sendHeartbeat(string clientIP, string hostName, string serverIP) {
     send(sock, message.c_str(), strlen(message.c_str()), 0);
 
     close(sock);
-    
+    return 0;
 }
 
 string readIPFromCfg(const string& cfgFile) {
@@ -138,6 +140,6 @@ int main() {
 
     while (true) {
         sendHeartbeat(clientIP, username, serverIP);
-        sleep(8.3);
+        sleep(6.3);
     }
 }  

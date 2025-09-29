@@ -29,27 +29,48 @@ void updateFile() {
     }
 }
 
+std::string readFileContents(const std::string& filename) {
+    std::ifstream file(filename);
+    if (!file.is_open()) return "No client info available.\n";
+
+    std::string content, line;
+    while (std::getline(file, line)) {
+        content += line + "\n";
+    }
+    return content;
+}
+
+
 void handleClient(int client_fd) {
     char buffer[1024] = {};
     ssize_t n = read(client_fd, buffer, sizeof(buffer) - 1);
+
     if (n > 0) {
         buffer[n] = '\0';
         std::string msg(buffer);
 
-        // Expect "hostname, ip"
-        size_t comma = msg.find(',');
-        if (comma != std::string::npos) {
-            std::string host = msg.substr(0, comma);
-            std::string ip = msg.substr(comma + 1);
-            if (!ip.empty() && ip[0] == ' ') ip.erase(0, 1); // trim space
+        if (msg == "GET_CLIENTS") {
+            std::string clientsData = readFileContents("connections.txt");
+            send(client_fd, clientsData.c_str(), clientsData.size(), 0);
+        } else {
+            // Expect "hostname, ip"
+            size_t comma = msg.find(',');
+            if (comma != std::string::npos) {
+                std::string host = msg.substr(0, comma);
+                std::string ip = msg.substr(comma + 1);
+                if (!ip.empty() && ip[0] == ' ') ip.erase(0, 1); // trim space
 
-            std::lock_guard<std::mutex> lock(clients_mutex);
-            clients[host] = {ip, std::chrono::steady_clock::now(), true};
-            updateFile();
+                std::lock_guard<std::mutex> lock(clients_mutex);
+                clients[host] = {ip, std::chrono::steady_clock::now(), true};
+                updateFile();
+            }
         }
     }
+
+    // Always close the socket
     close(client_fd);
 }
+
 
 void watchdog() {
     while (true) {
@@ -58,7 +79,7 @@ void watchdog() {
             auto now = std::chrono::steady_clock::now();
             for (auto& [host, info] : clients) {
                 if (info.online &&
-                    std::chrono::duration_cast<std::chrono::seconds>(now - info.last_seen).count() > 15) {
+                    std::chrono::duration_cast<std::chrono::seconds>(now - info.last_seen).count() > 5) {
                     info.online = false; // mark offline
                 }
             }
@@ -101,7 +122,8 @@ int main() {
         int client_fd = accept(server_fd, nullptr, nullptr);
         if (client_fd < 0) { perror("accept"); continue; }
 
-        std::thread(handleClient, client_fd).detach();
+        std::thread t(handleClient, client_fd);
+        t.detach(); // still detach, but safer now
     }
 
     close(server_fd);
