@@ -12,31 +12,30 @@
 #include <fcntl.h>
 #include <filesystem>
 
-// ==================== Utility Functions ====================
 
 void createGuestAccount() {
-    std::cout << "=== Create Guest Account ===\n";
+    std::cout << "Create Guest Account\n";
 
     // Add guest user
     int ret = system("sudo useradd -m guest");
 
     if (ret != 0) {
-        std::cerr << "❌ Failed to create guest account. "
+        std::cerr << "Failed to create guest account. "
                      "Maybe it already exists, or you need sudo.\n";
         return;
     }
 
-    std::cout << "✅ Guest account created successfully.\n";
+    std::cout << "Guest account created successfully.\n";
     std::cout << "Now you need to set a password for the guest user.\n";
-    std::cout << "⚠️ Remember this password or you won’t be able to log in as guest.\n\n";
+    std::cout << "Remember this password or you won’t be able to log in as guest.\n\n";
 
     // Run passwd to set password interactively
     ret = system("sudo passwd guest");
 
     if (ret == 0) {
-        std::cout << "✅ Password set for guest. Guest account is ready.\n";
+        std::cout << "Password set for guest. Guest account is ready.\n";
     } else {
-        std::cerr << "❌ Failed to set password for guest.\n";
+        std::cerr << "Failed to set password for guest.\n";
     }
 }
 
@@ -215,7 +214,6 @@ int kbhit() {
     return 0;
 }
 
-// ==================== Menu Functions ====================
 
 void viewUsers() {
     std::string serverIP = getServerIP();
@@ -235,7 +233,7 @@ void viewUsers() {
 
         clearScreen();
         std::string clientsData = requestClients(serverIP);
-        std::cout << "=== Connected Clients ===\n";
+        std::cout << "Connected Clients\n";
         std::cout << clientsData << std::endl;
 
         std::this_thread::sleep_for(std::chrono::seconds(3));
@@ -245,7 +243,7 @@ void viewUsers() {
 void showMenu() {
     while (true) {
         clearScreen();
-        std::cout << "=== BetterSSH Communications ===\n";
+        std::cout << "BetterSSH Communications\n";
         std::cout << "1. View Users\n";
         std::cout << "2. Change Server IP (coming soon)\n";
         std::cout << "3. Install Client\n";
@@ -291,7 +289,6 @@ void showMenu() {
     }
 }
 
-// ==================== Main ====================
 
 int main() {
     showMenu();
