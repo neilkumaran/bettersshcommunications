@@ -39,6 +39,24 @@ void createGuestAccount() {
     }
 }
 
+void installBetterSSH() {
+    std::string dest = "/usr/local/bin/betterssh";
+
+    // Remove any existing binary
+    std::string removeCmd = "sudo rm -f " + dest;
+    system(removeCmd.c_str());
+
+    // Copy current binary (assuming it's called 'app') to /usr/local/bin
+    std::string copyCmd = "sudo cp app " + dest;
+    int ret = system(copyCmd.c_str());
+
+    if (ret == 0) {
+        std::cout << "You can now run 'betterssh' from anywhere.\n";
+    } else {
+        std::cerr << "Failed to install betterssh. Make sure 'app' exists and you have sudo privileges.\n";
+    }
+}
+
 
 void installClientService() {
     const char* home = getenv("HOME");
@@ -249,8 +267,9 @@ void showMenu() {
         std::cout << "3. Install Client\n";
         std::cout << "4. Remove Client\n";
         std::cout << "5. Check Client Status\n";
-        std::cout << "6. Create Guest Account (Required for safe SSHing)\n";
-        std::cout << "7. Exit\n";
+        std::cout << "6. Create Guest Account (Required for safe SSHing)\n";   
+        std::cout << "7. Install app globally\n";
+        std::cout << "8. Exit\n";
         std::cout << "Enter your choice: ";
 
         int choice;
@@ -281,7 +300,11 @@ void showMenu() {
                 std::this_thread::sleep_for(std::chrono::seconds(2));
                 break; 
             case 7:
-                return;
+                installBetterSSH();    
+                std::this_thread::sleep_for(std::chrono::seconds(2));
+                break;
+            case 8:
+                return; 
             default:
                 std::cout << "Invalid choice.\n";
                 std::this_thread::sleep_for(std::chrono::seconds(2));
